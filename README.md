@@ -9,11 +9,11 @@
 
 > **A Research-Grade Digital Twin for Autonomous Cloud-Native Resilience and Sustainability Engineering.**
 
-KRSI is an elite infrastructure engineering platform designed to model, simulate, and optimise the complex tradeoffs between **Operational Resilience** and **Carbon Sustainability** in Kubernetes environments. Built as a decoupled digital twin, it combines a high-concurrency Go simulation engine with a PyTorch-driven Reinforcement Learning (RL) controller to achieve autonomous, multi-objective cluster optimisation.
+KRSI is an infrastructure engineering platform designed to model, simulate, and optimise the complex tradeoffs between **Operational Resilience** and **Carbon Sustainability** in Kubernetes environments. Built as a decoupled digital twin, it combines a high-concurrency Go simulation engine with a PyTorch-driven Reinforcement Learning (RL) controller to achieve autonomous, multi-objective cluster optimisation.
 
 ---
 
-## 🏗 High-Level Architecture
+##  High-Level Architecture
 
 KRSI follows a production-grade decoupled architecture, isolating simulation physics from control logic to enable high-fidelity experimentation and scalable RL training.
 
@@ -59,7 +59,7 @@ graph TB
 
 ---
 
-## 🛡 Attack-Defense & Chaos Engineering
+##  Attack-Defense & Chaos Engineering
 
 KRSI isn't just a simulator; it's a security playground. It enables the evaluation of autonomous remediation policies against a variety of infrastructure and security threats.
 
@@ -77,7 +77,7 @@ KRSI isn't just a simulator; it's a security playground. It enables the evaluati
 
 ---
 
-## 📈 The KRSI Metric System
+##  The KRSI Metric System
 
 The **Kubernetes Resilience-Sustainability Index** is a multi-dimensional harmonic mean designed to provide a single "North Star" metric for cluster health.
 
@@ -88,7 +88,7 @@ The **Kubernetes Resilience-Sustainability Index** is a multi-dimensional harmon
 
 ---
 
-## 📊 Observability: SRE Dashboards
+##  Observability: SRE Dashboards
 
 KRSI exports production-grade telemetry to Prometheus, enabling high-resolution analysis of optimisation trajectories.
 
@@ -104,21 +104,21 @@ KRSI exports production-grade telemetry to Prometheus, enabling high-resolution 
 
 ---
 
-## 🚀 Deployment & Execution
+##  Deployment & Execution
 
-### 🐳 Docker Compose (Full Stack)
+###  Docker Compose (Full Stack)
 The fastest way to evaluate KRSI with full observability:
 ```bash
 make docker-up
 ```
 
-### ☸️ Kubernetes (Helm)
+### ☸ Kubernetes (Helm)
 Deploy the simulator as a service in your cluster:
 ```bash
 helm install krsi ./deploy/helm/krsi
 ```
 
-### 🧪 Running Experiments
+###  Running Experiments
 Execute a reproducible experiment suite across multiple seeds:
 ```bash
 python -m controller.train --config configs/default.yaml
@@ -126,7 +126,7 @@ python -m controller.train --config configs/default.yaml
 
 ---
 
-## 🗺 Roadmap
+##  Roadmap
 
 ### Short-Term
 - [ ] **Multi-Agent RL**: Cooperative agents for node and pod-level control.
@@ -140,7 +140,7 @@ python -m controller.train --config configs/default.yaml
 
 ---
 
-## 📜 Research & Attribution
+##  Research & Attribution
 
 If you use this framework for your research, please cite:
 ```bibtex
@@ -153,4 +153,3 @@ If you use this framework for your research, please cite:
 ```
 
 ---
-Built with ❤️ by the KRSI Research Team.
