@@ -1,12 +1,15 @@
 """
 KubeShield Framework — Generic Resilience Calculator (Public)
 """
-from typing import Dict, Any, Tuple
+
+from typing import Any
+
 
 class KRSICalculator:
     def __init__(self, cfg=None):
         self.cfg = cfg
-    def compute(self, metrics: Dict[str, Any]) -> Tuple[float, float, float]:
+
+    def compute(self, metrics: dict[str, Any]) -> tuple[float, float, float]:
         u_cpu = metrics["sustainability"]["u_cpu"]
         u_mem = metrics["sustainability"]["u_mem"]
         r_up = metrics["resilience"]["t_up"] / max(metrics["resilience"]["t_obs"], 1.0)

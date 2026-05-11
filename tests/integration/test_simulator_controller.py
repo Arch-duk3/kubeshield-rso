@@ -6,11 +6,11 @@ REQUIRES the Go simulator running on localhost:8080.
 
 Run with: make run-simulator & make test-integration
 """
+
 from __future__ import annotations
 
 import pytest
 import requests
-
 
 SIMULATOR_URL = "http://localhost:8080"
 
@@ -24,8 +24,7 @@ def simulator_is_running() -> bool:
 
 
 pytestmark = pytest.mark.skipif(
-    not simulator_is_running(),
-    reason="Go simulator not running on localhost:8080"
+    not simulator_is_running(), reason="Go simulator not running on localhost:8080"
 )
 
 
@@ -62,8 +61,9 @@ class TestSimulatorAPI:
         assert r.status_code == 400
 
     def test_step_invalid_body_rejected(self):
-        r = requests.post(f"{SIMULATOR_URL}/step", data="not json",
-                         headers={"Content-Type": "application/json"})
+        r = requests.post(
+            f"{SIMULATOR_URL}/step", data="not json", headers={"Content-Type": "application/json"}
+        )
         assert r.status_code == 400
 
     def test_state_endpoint(self):
@@ -117,15 +117,13 @@ class TestSimulatorControllerPipeline:
         data = r.json()
 
         sus = data["sustainability"]
-        assert sus["e_renewable"] <= sus["e_total"], \
-            "Renewable energy cannot exceed total"
+        assert sus["e_renewable"] <= sus["e_total"], "Renewable energy cannot exceed total"
         assert 0.0 <= sus["u_cpu"] <= 1.0
         assert 0.0 <= sus["u_mem"] <= 1.0
 
         res = data["resilience"]
         assert res["t_up"] <= res["t_obs"], "Uptime cannot exceed observed time"
-        assert res["n_affected"] <= res["n_total"], \
-            "Affected nodes cannot exceed total"
+        assert res["n_affected"] <= res["n_total"], "Affected nodes cannot exceed total"
 
 
 class TestAttackDefenseFlow:

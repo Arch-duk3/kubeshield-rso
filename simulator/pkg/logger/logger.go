@@ -14,7 +14,7 @@ import (
 type Level int
 
 const (
-	DEBUG   Level = iota
+	DEBUG Level = iota
 	INFO
 	WARNING
 	ERROR
@@ -38,14 +38,14 @@ func (l Level) String() string {
 // LogEntry is the canonical structured log record.
 // Every field maps directly to the log schema in docs/log_schema.md.
 type LogEntry struct {
-	Timestamp   string                 `json:"timestamp"`
-	Level       string                 `json:"level"`
-	Component   string                 `json:"component"`
-	EventType   string                 `json:"event_type"`
-	SimCycleID  int64                  `json:"sim_cycle_id,omitempty"`
-	TimeStep    int                    `json:"timestep,omitempty"`
-	Message     string                 `json:"message"`
-	Data        map[string]interface{} `json:"data,omitempty"`
+	Timestamp  string                 `json:"timestamp"`
+	Level      string                 `json:"level"`
+	Component  string                 `json:"component"`
+	EventType  string                 `json:"event_type"`
+	SimCycleID int64                  `json:"sim_cycle_id,omitempty"`
+	TimeStep   int                    `json:"timestep,omitempty"`
+	Message    string                 `json:"message"`
+	Data       map[string]interface{} `json:"data,omitempty"`
 }
 
 // Logger is the central logger for a named component.
@@ -109,18 +109,18 @@ func (l *Logger) Error(eventType, msg string, cycleID int64, timestep int, data 
 
 // --- Event type constants for consistent event taxonomy ---
 const (
-	EventSimStep        = "SIM_STEP"
-	EventSimReset       = "SIM_RESET"
-	EventActionApplied  = "ACTION_APPLIED"
-	EventFailureInjected = "FAILURE_INJECTED"
+	EventSimStep          = "SIM_STEP"
+	EventSimReset         = "SIM_RESET"
+	EventActionApplied    = "ACTION_APPLIED"
+	EventFailureInjected  = "FAILURE_INJECTED"
 	EventFailureRecovered = "FAILURE_RECOVERED"
 	EventAdversarialEvent = "ADVERSARIAL_EVENT"
-	EventWorkloadBurst  = "WORKLOAD_BURST"
-	EventStateTransition = "STATE_TRANSITION"
+	EventWorkloadBurst    = "WORKLOAD_BURST"
+	EventStateTransition  = "STATE_TRANSITION"
 	EventResourcePressure = "RESOURCE_PRESSURE"
 	EventSchedulerChange  = "SCHEDULER_CHANGE"
-	EventNodeAdded      = "NODE_ADDED"
-	EventNodeRemoved    = "NODE_REMOVED"
-	EventReplicaScaled  = "REPLICA_SCALED"
-	EventSLAViolation   = "SLA_VIOLATION"
+	EventNodeAdded        = "NODE_ADDED"
+	EventNodeRemoved      = "NODE_REMOVED"
+	EventReplicaScaled    = "REPLICA_SCALED"
+	EventSLAViolation     = "SLA_VIOLATION"
 )

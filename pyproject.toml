@@ -1,0 +1,42 @@
+[project]
+name = "kubeshield-rso"
+version = "1.0.0"
+description = "Kubernetes Resilience & Sustainability Optimization Framework"
+requires-python = ">=3.12"
+dependencies = [
+    "torch>=2.0.0",
+    "numpy>=1.24.0",
+    "requests>=2.28.0",
+    "urllib3>=2.0.0",
+    "pyyaml>=6.0",
+    "prometheus-client>=0.19.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = ["E501"] # Line too long (handled by formatter)
+
+[tool.ruff.lint.isort]
+known-first-party = ["controller"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-v --cov=controller --cov-report=term-missing"

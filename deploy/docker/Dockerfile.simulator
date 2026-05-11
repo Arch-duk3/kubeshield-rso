@@ -1,5 +1,5 @@
 # --- Build Stage ---
-FROM golang:1.26-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
@@ -7,8 +7,7 @@ WORKDIR /app
 RUN apk add --no-cache git
 
 # Copy dependency files first for caching
-COPY go.mod ./
-# No go.sum yet, will be generated
+COPY go.mod go.sum* ./
 RUN go mod download
 
 # Copy source
@@ -18,22 +17,28 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o krsi-simulator ./main.go
 
 # --- Final Stage ---
-FROM alpine:latest
+FROM alpine:3.21
+
+# Security: Use a specific, non-root user
+RUN adduser -D -u 10001 krsi
 
 WORKDIR /app
 
-# Install runtime dependencies
-RUN apk add --no-cache ca-certificates
+# Install runtime dependencies (pinned versions for security)
+RUN apk add --no-cache ca-certificates=~20241121
 
 # Copy binary from builder
 COPY --from=builder /app/krsi-simulator .
-
-# Expose API port
-EXPOSE 8080
+RUN chown krsi:krsi /app/krsi-simulator
 
 # Default environment variables
 ENV LOG_LEVEL=INFO
 ENV PORT=8080
+
+USER krsi
+
+# Expose API port
+EXPOSE 8080
 
 # Run simulator
 ENTRYPOINT ["./krsi-simulator"]

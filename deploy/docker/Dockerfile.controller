@@ -1,35 +1,44 @@
 # --- Base Stage ---
-FROM python:3.11-slim AS base
+FROM python:3.12-slim-bookworm AS base
 
 WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
+    build-essential=12.9 \
     && rm -rf /var/lib/apt/lists/*
+
+# Upgrade core python packaging tools (Phase 6)
+RUN pip install --no-cache-dir --upgrade pip==24.0 setuptools==69.1.1 wheel==0.42.0
 
 # Copy requirements and install
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # --- Final Stage ---
-FROM python:3.11-slim
+FROM python:3.12-slim-bookworm
+
+# Security: Create non-root user
+RUN useradd -m -u 10001 krsi
 
 WORKDIR /app
 
 # Copy installed packages from base
-COPY --from=base /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=base /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=base /usr/local/bin /usr/local/bin
 
 # Copy source code
 COPY . .
+RUN chown -R krsi:krsi /app
 
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV KRSI_CONFIG=/app/configs/default.yaml
 
-# Create directory for datasets and logs
-RUN mkdir -p datasets logs
+# Prepare output directories
+RUN mkdir -p datasets logs && chown krsi:krsi datasets logs
+
+USER krsi
 
 # Default command: run training
 ENTRYPOINT ["python", "-m", "controller.train"]

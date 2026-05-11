@@ -9,11 +9,13 @@ by using MockSimulatorClient. Covers:
   - Episode termination conditions
   - SLA violation detection
 """
+
 from __future__ import annotations
 
 import math
-import pytest
+
 import numpy as np
+import pytest
 
 from controller.env.k8s_env import K8sEnv
 from controller.env.sim_client import MockSimulatorClient
@@ -63,7 +65,17 @@ class TestEnvStep:
     def test_step_info_contains_required_keys(self, env: K8sEnv):
         env.reset()
         _, _, _, info = env.step(0)
-        required = {"KRSI", "S", "R", "action", "action_name", "n_rep", "n_nodes", "latency", "energy"}
+        required = {
+            "KRSI",
+            "S",
+            "R",
+            "action",
+            "action_name",
+            "n_rep",
+            "n_nodes",
+            "latency",
+            "energy",
+        }
         assert required.issubset(info.keys()), f"Missing keys: {required - info.keys()}"
 
     def test_step_krsi_in_range(self, env: K8sEnv):

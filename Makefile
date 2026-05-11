@@ -8,7 +8,7 @@
 
 SIMULATOR_BIN   := simulator/krsi-simulator
 CONTROLLER_DIR  := controller
-PYTHON          := python3
+PYTHON          := python3.12
 PYTEST          := $(PYTHON) -m pytest
 GOLINT          := golangci-lint
 VENV            := $(CONTROLLER_DIR)/.venv

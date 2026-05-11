@@ -9,12 +9,12 @@ WHY typed config dataclasses:
   - Validation at load time (not buried in training loops 1000 steps in)
   - Reproducibility: the full config is logged at experiment start
 """
+
 from __future__ import annotations
 
 import os
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import List
 
 import yaml
 
@@ -32,7 +32,7 @@ class SimulatorConfig:
 
 @dataclass
 class ExperimentConfig:
-    seeds: List[int] = field(default_factory=lambda: [42, 43, 44, 45, 46])
+    seeds: list[int] = field(default_factory=lambda: [42, 43, 44, 45, 46])
     epochs: int = 100
     steps_per_epoch: int = 100
     output_dir: str = "datasets"
@@ -63,7 +63,7 @@ class AgentConfig:
     batch_size: int = 32
     replay_buffer_size: int = 10000
     target_update_freq: int = 5
-    hidden_layers: List[int] = field(default_factory=lambda: [64, 64])
+    hidden_layers: list[int] = field(default_factory=lambda: [64, 64])
     activation: str = "relu"
     grad_clip_norm: float = 1.0
 
@@ -97,6 +97,7 @@ class LoggingConfig:
 @dataclass
 class KRSIFrameworkConfig:
     """Root configuration object for the entire KRSI framework."""
+
     simulator: SimulatorConfig = field(default_factory=SimulatorConfig)
     experiment: ExperimentConfig = field(default_factory=ExperimentConfig)
     environment: EnvironmentConfig = field(default_factory=EnvironmentConfig)
@@ -129,7 +130,7 @@ def load_config(path: str | Path = "configs/default.yaml") -> KRSIFrameworkConfi
     if not path.exists():
         raise FileNotFoundError(f"Config file not found: {path}")
 
-    with open(path, "r") as f:
+    with open(path) as f:
         raw = yaml.safe_load(f)
 
     if raw is None:

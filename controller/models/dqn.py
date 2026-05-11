@@ -6,15 +6,16 @@ Separating the PyTorch model from the training loop is essential for:
   - Model serialisation/loading without coupling to agent state
   - Future architecture swaps (e.g., dueling DQN, transformer-based policy)
 """
-from __future__ import annotations
 
-from typing import List
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
 
 
-def _build_mlp(input_dim: int, hidden_layers: List[int], output_dim: int, activation: str) -> nn.Sequential:
+def _build_mlp(
+    input_dim: int, hidden_layers: list[int], output_dim: int, activation: str
+) -> nn.Sequential:
     """Build an MLP from a list of hidden layer sizes.
 
     WHY a factory function instead of hardcoded layers:
@@ -24,7 +25,7 @@ def _build_mlp(input_dim: int, hidden_layers: List[int], output_dim: int, activa
     act_map = {"relu": nn.ReLU, "tanh": nn.Tanh, "elu": nn.ELU}
     act_cls = act_map.get(activation.lower(), nn.ReLU)
 
-    layers: List[nn.Module] = []
+    layers: list[nn.Module] = []
     prev = input_dim
     for h in hidden_layers:
         layers.append(nn.Linear(prev, h))
@@ -47,7 +48,7 @@ class DQN(nn.Module):
         self,
         state_dim: int,
         action_dim: int,
-        hidden_layers: List[int] | None = None,
+        hidden_layers: list[int] | None = None,
         activation: str = "relu",
     ) -> None:
         super().__init__()
@@ -69,7 +70,7 @@ class DQN(nn.Module):
             return int(torch.argmax(self.forward(state)).item())
 
     @classmethod
-    def from_config(cls, state_dim: int, action_dim: int, agent_cfg: object) -> "DQN":
+    def from_config(cls, state_dim: int, action_dim: int, agent_cfg: object) -> DQN:
         """Construct a DQN from an AgentConfig object."""
         return cls(
             state_dim=state_dim,

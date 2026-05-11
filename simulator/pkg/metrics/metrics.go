@@ -55,14 +55,14 @@ var (
 // RecordMetrics updates the Prometheus gauges with the current simulation state.
 func RecordMetrics(m models.MetricsResponse) {
 	cycleStr := string(m.SimCycleID)
-	
+
 	EnergyConsumption.WithLabelValues(cycleStr).Set(m.Sustainability.ETotal)
 	Throughput.WithLabelValues(cycleStr).Set(m.Sustainability.W)
 	CarbonIntensity.WithLabelValues(cycleStr).Set(m.Sustainability.CI)
-	
+
 	ActiveFailures.WithLabelValues(cycleStr).Set(float64(m.Resilience.Nf))
 	Latency.WithLabelValues(cycleStr).Set(m.State.L)
-	
+
 	ReplicaCount.WithLabelValues(cycleStr).Set(float64(m.State.NRep))
 	NodeCount.WithLabelValues(cycleStr).Set(float64(m.State.NNodes))
 }

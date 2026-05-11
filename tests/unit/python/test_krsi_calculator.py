@@ -12,17 +12,19 @@ Coverage:
   - Adaptive weights: verify inverse-variance weighting converges
   - Long trajectory: 10,000 steps without numeric instability
 """
+
 from __future__ import annotations
 
 import math
-import pytest
+
 import numpy as np
+import pytest
 
 from controller.models.krsi_calculator import KRSICalculator
 from controller.utils.config import KRSIConfig
 
-
 # ─── Fixtures ────────────────────────────────────────────────────────────────
+
 
 def _make_metrics(
     e_total: float = 300.0,
@@ -54,20 +56,34 @@ def _make_metrics(
 ) -> dict:
     return {
         "sustainability": {
-            "e_total": e_total, "w": w, "ci": ci,
+            "e_total": e_total,
+            "w": w,
+            "ci": ci,
             "e_renewable": e_renewable,
-            "u_cpu": u_cpu, "u_mem": u_mem, "u_sto": u_sto,
+            "u_cpu": u_cpu,
+            "u_mem": u_mem,
+            "u_sto": u_sto,
             "u_target": u_target,
         },
         "resilience": {
-            "t_up": t_up, "t_obs": t_obs, "n_f": n_f,
-            "t_rec": t_rec, "t_rec_max": t_rec_max,
-            "p_min": p_min, "p_baseline": p_baseline, "p_post": p_post,
-            "w_disruption": w_disruption, "w_baseline": w_baseline,
-            "t_det": t_det, "t_det_max": t_det_max,
-            "t_sec": t_sec, "t_sec_max": t_sec_max,
-            "n_affected": n_affected, "n_total": n_total,
-            "severity_score": severity_score, "o_conf": o_conf,
+            "t_up": t_up,
+            "t_obs": t_obs,
+            "n_f": n_f,
+            "t_rec": t_rec,
+            "t_rec_max": t_rec_max,
+            "p_min": p_min,
+            "p_baseline": p_baseline,
+            "p_post": p_post,
+            "w_disruption": w_disruption,
+            "w_baseline": w_baseline,
+            "t_det": t_det,
+            "t_det_max": t_det_max,
+            "t_sec": t_sec,
+            "t_sec_max": t_sec_max,
+            "n_affected": n_affected,
+            "n_total": n_total,
+            "severity_score": severity_score,
+            "o_conf": o_conf,
         },
     }
 
@@ -84,6 +100,7 @@ def nominal_metrics() -> dict:
 
 # ─── Basic Output Tests ──────────────────────────────────────────────────────
 
+
 class TestKRSIOutputRange:
     """KRSI, S, and R must always be in [0, 1]."""
 
@@ -96,11 +113,21 @@ class TestKRSIOutputRange:
     def test_perfect_system(self, calc: KRSICalculator):
         """System with no failures, high throughput, low energy."""
         m = _make_metrics(
-            e_total=100.0, w=200.0, ci=0.1, e_renewable=80.0,
-            t_up=1000.0, t_obs=1000.0, n_f=0,
-            t_rec=0.0, p_min=1.0, p_post=1.0,
-            w_disruption=0.0, t_det=0.0, t_sec=0.0,
-            n_affected=0, severity_score=0.0,
+            e_total=100.0,
+            w=200.0,
+            ci=0.1,
+            e_renewable=80.0,
+            t_up=1000.0,
+            t_obs=1000.0,
+            n_f=0,
+            t_rec=0.0,
+            p_min=1.0,
+            p_post=1.0,
+            w_disruption=0.0,
+            t_det=0.0,
+            t_sec=0.0,
+            n_affected=0,
+            severity_score=0.0,
         )
         krsi, s, r = calc.compute(m)
         assert krsi > 0.5, f"Perfect system KRSI should be high, got {krsi}"
@@ -109,9 +136,15 @@ class TestKRSIOutputRange:
     def test_degraded_system(self, calc: KRSICalculator):
         """System with many failures and high severity."""
         m = _make_metrics(
-            n_f=5, t_rec=18.0, p_min=0.3, p_post=0.4,
-            w_disruption=80.0, t_det=18.0, t_sec=35.0,
-            n_affected=3, severity_score=0.8,
+            n_f=5,
+            t_rec=18.0,
+            p_min=0.3,
+            p_post=0.4,
+            w_disruption=80.0,
+            t_det=18.0,
+            t_sec=35.0,
+            n_affected=3,
+            severity_score=0.8,
         )
         # Warm up the window first
         for _ in range(5):
@@ -121,6 +154,7 @@ class TestKRSIOutputRange:
 
 
 # ─── Edge Case Tests ─────────────────────────────────────────────────────────
+
 
 class TestKRSIEdgeCases:
     """Test boundary conditions that could cause division by zero or NaN."""
@@ -178,6 +212,7 @@ class TestKRSIEdgeCases:
 
 # ─── Determinism Tests ───────────────────────────────────────────────────────
 
+
 class TestKRSIDeterminism:
     """Same inputs must produce identical outputs."""
 
@@ -194,6 +229,7 @@ class TestKRSIDeterminism:
 
 
 # ─── Stability Tests ─────────────────────────────────────────────────────────
+
 
 class TestKRSIStability:
     """Test numeric stability over long trajectories."""
@@ -230,6 +266,7 @@ class TestKRSIStability:
 
 
 # ─── Harmonic Mean Property Tests ────────────────────────────────────────────
+
 
 class TestKRSIHarmonicMean:
     """Verify the harmonic mean (§8.10) satisfies known mathematical properties."""

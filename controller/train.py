@@ -11,6 +11,7 @@ Orchestrates the full experiment lifecycle:
 Usage:
   python -m controller.train --config configs/default.yaml --seed 42 --epochs 100
 """
+
 from __future__ import annotations
 
 import argparse
@@ -19,16 +20,16 @@ import json
 import random
 import sys
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 import numpy as np
 import torch
 
-from controller.utils.config import load_config, KRSIFrameworkConfig
-from controller.utils.logger import KRSILogger, EventType
+from controller.agents.ddqn_agent import DDQNAgent
 from controller.env.k8s_env import K8sEnv
 from controller.env.sim_client import SimulatorClient
-from controller.agents.ddqn_agent import DDQNAgent
+from controller.utils.config import KRSIFrameworkConfig, load_config
+from controller.utils.logger import EventType, KRSILogger
 
 
 def set_seeds(seed: int) -> None:
@@ -39,7 +40,7 @@ def set_seeds(seed: int) -> None:
         torch.cuda.manual_seed_all(seed)
 
 
-def run_experiment(seed: int, cfg: KRSIFrameworkConfig, log: KRSILogger) -> Dict[str, Any]:
+def run_experiment(seed: int, cfg: KRSIFrameworkConfig, log: KRSILogger) -> dict[str, Any]:
     """Run a single training experiment for the given seed.
 
     Returns a summary dict with final metrics for statistical analysis.
@@ -50,14 +51,17 @@ def run_experiment(seed: int, cfg: KRSIFrameworkConfig, log: KRSILogger) -> Dict
 
     # Connect to simulator with retry
     client = SimulatorClient(cfg.simulator.url)
-    log.info(EventType.SIM_CONNECT_RETRY, "Waiting for simulator...",
-             data={"url": cfg.simulator.url})
+    log.info(
+        EventType.SIM_CONNECT_RETRY, "Waiting for simulator...", data={"url": cfg.simulator.url}
+    )
     if not client.wait_for_simulator(max_retries=30, delay=1.0):
-        log.error(EventType.SIM_STEP_ERROR, "Simulator unreachable after 30 retries",
-                  data={"url": cfg.simulator.url})
+        log.error(
+            EventType.SIM_STEP_ERROR,
+            "Simulator unreachable after 30 retries",
+            data={"url": cfg.simulator.url},
+        )
         sys.exit(1)
-    log.info(EventType.SIM_CONNECTED, "Connected to simulator",
-             data={"url": cfg.simulator.url})
+    log.info(EventType.SIM_CONNECTED, "Connected to simulator", data={"url": cfg.simulator.url})
 
     # Build environment and agent
     env = K8sEnv(cfg=cfg, log=log, client=client)
@@ -81,12 +85,25 @@ def run_experiment(seed: int, cfg: KRSIFrameworkConfig, log: KRSILogger) -> Dict
 
     with open(csv_path, "w", newline="") as csv_file:
         writer = csv.writer(csv_file)
-        writer.writerow([
-            "global_step", "epoch", "step", "seed",
-            "S", "R", "KRSI", "action", "action_name",
-            "n_rep", "n_nodes", "latency_ms", "energy_w",
-            "reward", "epsilon",
-        ])
+        writer.writerow(
+            [
+                "global_step",
+                "epoch",
+                "step",
+                "seed",
+                "S",
+                "R",
+                "KRSI",
+                "action",
+                "action_name",
+                "n_rep",
+                "n_nodes",
+                "latency_ms",
+                "energy_w",
+                "reward",
+                "epsilon",
+            ]
+        )
 
         for epoch in range(cfg.experiment.epochs):
             log.set_context(epoch=epoch)
@@ -121,14 +138,25 @@ def run_experiment(seed: int, cfg: KRSIFrameworkConfig, log: KRSILogger) -> Dict
                 all_krsi.append(info["KRSI"])
                 all_rewards.append(reward)
 
-                writer.writerow([
-                    global_step, epoch, step, seed,
-                    round(info["S"], 6), round(info["R"], 6), round(info["KRSI"], 6),
-                    info["action"], info["action_name"],
-                    info["n_rep"], info["n_nodes"],
-                    round(info["latency"], 3), round(info["energy"], 3),
-                    round(reward, 6), round(agent.epsilon, 4),
-                ])
+                writer.writerow(
+                    [
+                        global_step,
+                        epoch,
+                        step,
+                        seed,
+                        round(info["S"], 6),
+                        round(info["R"], 6),
+                        round(info["KRSI"], 6),
+                        info["action"],
+                        info["action_name"],
+                        info["n_rep"],
+                        info["n_nodes"],
+                        round(info["latency"], 3),
+                        round(info["energy"], 3),
+                        round(reward, 6),
+                        round(agent.epsilon, 4),
+                    ]
+                )
 
                 if done:
                     break
@@ -204,11 +232,15 @@ def main() -> None:
 
     # Print final multi-seed summary
     mean_krsis = [s["mean_krsi"] for s in all_summaries]
-    log.info(EventType.TRAIN_END, "All seeds complete", data={
-        "seeds": cfg.experiment.seeds,
-        "mean_krsi_across_seeds": round(float(np.mean(mean_krsis)), 6),
-        "std_krsi_across_seeds": round(float(np.std(mean_krsis)), 6),
-    })
+    log.info(
+        EventType.TRAIN_END,
+        "All seeds complete",
+        data={
+            "seeds": cfg.experiment.seeds,
+            "mean_krsi_across_seeds": round(float(np.mean(mean_krsis)), 6),
+            "std_krsi_across_seeds": round(float(np.std(mean_krsis)), 6),
+        },
+    )
 
 
 if __name__ == "__main__":

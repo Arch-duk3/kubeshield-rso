@@ -9,12 +9,13 @@ Implements the full Double DQN training loop with:
   - Structured logging at every training event
   - Heuristic safety fallback (critical resilience floor)
 """
+
 from __future__ import annotations
 
 import random
 from collections import deque
 from pathlib import Path
-from typing import Any, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
 import torch
@@ -23,10 +24,9 @@ import torch.optim as optim
 
 from controller.models.dqn import DQN
 from controller.utils.config import AgentConfig
-from controller.utils.logger import KRSILogger, EventType
+from controller.utils.logger import EventType, KRSILogger
 
-
-Transition = Tuple[np.ndarray, int, float, np.ndarray, bool]
+Transition = tuple[np.ndarray, int, float, np.ndarray, bool]
 
 
 class ReplayBuffer:
@@ -39,11 +39,12 @@ class ReplayBuffer:
     def __init__(self, capacity: int) -> None:
         self._buf: deque[Transition] = deque(maxlen=capacity)
 
-    def push(self, state: np.ndarray, action: int, reward: float,
-             next_state: np.ndarray, done: bool) -> None:
+    def push(
+        self, state: np.ndarray, action: int, reward: float, next_state: np.ndarray, done: bool
+    ) -> None:
         self._buf.append((state, action, reward, next_state, done))
 
-    def sample(self, batch_size: int) -> List[Transition]:
+    def sample(self, batch_size: int) -> list[Transition]:
         return random.sample(self._buf, batch_size)
 
     def __len__(self) -> int:
@@ -72,7 +73,7 @@ class DDQNAgent:
         action_dim: int,
         cfg: AgentConfig,
         log: KRSILogger,
-        device: Optional[str] = None,
+        device: str | None = None,
     ) -> None:
         self.cfg = cfg
         self.log = log
@@ -91,17 +92,22 @@ class DDQNAgent:
         self.gamma = cfg.gamma
         self._step_count = 0
 
-        log.info(EventType.TRAIN_START, "DDQN Agent initialised", data={
-            "state_dim": state_dim,
-            "action_dim": action_dim,
-            "device": str(self.device),
-            "architecture": cfg.hidden_layers,
-            "lr": cfg.learning_rate,
-            "buffer_size": cfg.replay_buffer_size,
-        })
+        log.info(
+            EventType.TRAIN_START,
+            "DDQN Agent initialised",
+            data={
+                "state_dim": state_dim,
+                "action_dim": action_dim,
+                "device": str(self.device),
+                "architecture": cfg.hidden_layers,
+                "lr": cfg.learning_rate,
+                "buffer_size": cfg.replay_buffer_size,
+            },
+        )
 
-    def select_action(self, state: np.ndarray, r_critical: float,
-                      R: float, heuristic_fn: Any) -> Tuple[int, str]:
+    def select_action(
+        self, state: np.ndarray, r_critical: float, R: float, heuristic_fn: Any
+    ) -> tuple[int, str]:
         """Select action using ε-greedy policy with heuristic safety override.
 
         Returns:
@@ -115,21 +121,28 @@ class DDQNAgent:
 
         if random.random() < self.epsilon:
             action = random.randint(0, self.action_dim - 1)
-            self.log.debug(EventType.EXPLORATION_ACTION, "Exploration action",
-                           data={"action": action, "epsilon": round(self.epsilon, 4)})
+            self.log.debug(
+                EventType.EXPLORATION_ACTION,
+                "Exploration action",
+                data={"action": action, "epsilon": round(self.epsilon, 4)},
+            )
             return action, "exploration"
 
         state_t = torch.tensor(state, dtype=torch.float32, device=self.device).unsqueeze(0)
         action = self.online_net.get_action(state_t)
-        self.log.debug(EventType.EXPLOITATION_ACTION, "Exploitation action",
-                       data={"action": action, "epsilon": round(self.epsilon, 4)})
+        self.log.debug(
+            EventType.EXPLOITATION_ACTION,
+            "Exploitation action",
+            data={"action": action, "epsilon": round(self.epsilon, 4)},
+        )
         return action, "exploitation"
 
-    def store(self, state: np.ndarray, action: int, reward: float,
-              next_state: np.ndarray, done: bool) -> None:
+    def store(
+        self, state: np.ndarray, action: int, reward: float, next_state: np.ndarray, done: bool
+    ) -> None:
         self.buffer.push(state, action, reward, next_state, done)
 
-    def update(self) -> Optional[float]:
+    def update(self) -> float | None:
         """Sample a batch and perform one gradient update.
 
         Returns:
@@ -168,19 +181,21 @@ class DDQNAgent:
         loss.backward()
 
         # Gradient clipping: prevents destabilising updates from outlier batches
-        grad_norm = nn.utils.clip_grad_norm_(
-            self.online_net.parameters(), self.cfg.grad_clip_norm
-        )
+        grad_norm = nn.utils.clip_grad_norm_(self.online_net.parameters(), self.cfg.grad_clip_norm)
 
         self.optimizer.step()
         self._step_count += 1
 
         loss_val = float(loss.item())
-        self.log.debug(EventType.LOSS_COMPUTED, "Training update", data={
-            "loss": round(loss_val, 6),
-            "grad_norm": round(float(grad_norm), 4),
-            "buffer_size": len(self.buffer),
-        })
+        self.log.debug(
+            EventType.LOSS_COMPUTED,
+            "Training update",
+            data={
+                "loss": round(loss_val, 6),
+                "grad_norm": round(float(grad_norm), 4),
+                "buffer_size": len(self.buffer),
+            },
+        )
 
         return loss_val
 
@@ -188,14 +203,20 @@ class DDQNAgent:
         """Decay ε and log the transition."""
         prev = self.epsilon
         self.epsilon = max(self.cfg.epsilon_min, self.epsilon * self.cfg.epsilon_decay)
-        self.log.debug(EventType.EPSILON_DECAY, "Epsilon decayed",
-                       data={"from": round(prev, 4), "to": round(self.epsilon, 4)})
+        self.log.debug(
+            EventType.EPSILON_DECAY,
+            "Epsilon decayed",
+            data={"from": round(prev, 4), "to": round(self.epsilon, 4)},
+        )
 
     def sync_target_network(self) -> None:
         """Hard copy online weights to target network."""
         self.target_net.load_state_dict(self.online_net.state_dict())
-        self.log.info(EventType.TARGET_NET_UPDATE, "Target network synchronised",
-                      data={"step": self._step_count})
+        self.log.info(
+            EventType.TARGET_NET_UPDATE,
+            "Target network synchronised",
+            data={"step": self._step_count},
+        )
 
     def save(self, path: str | Path) -> None:
         """Save online network weights."""

@@ -10,6 +10,7 @@ Features:
   - Generation of statistical comparison plots (placeholder)
   - Config-coupled artifact preservation
 """
+
 from __future__ import annotations
 
 import argparse
@@ -17,12 +18,11 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from typing import List
 
 import pandas as pd
 
 
-def run_command(cmd: List[str]) -> bool:
+def run_command(cmd: list[str]) -> bool:
     print(f"Executing: {' '.join(cmd)}")
     try:
         subprocess.run(cmd, check=True)
@@ -36,26 +36,32 @@ def aggregate_results(output_dir: Path) -> pd.DataFrame:
     """Scan the output directory for JSON results and aggregate them."""
     all_data = []
     for json_file in output_dir.glob("results_seed_*.json"):
-        with open(json_file, "r") as f:
+        with open(json_file) as f:
             data = json.load(f)
             # Extract final metrics from the last epoch
             last_epoch = data["results"][-1]
-            all_data.append({
-                "seed": last_epoch["seed"],
-                "avg_krsi": last_epoch["avg_krsi"],
-                "total_reward": last_epoch["epoch_reward"],
-                "config_type": data["config"].get("agent", {}).get("type", "unknown")
-            })
-    
+            all_data.append(
+                {
+                    "seed": last_epoch["seed"],
+                    "avg_krsi": last_epoch["avg_krsi"],
+                    "total_reward": last_epoch["epoch_reward"],
+                    "config_type": data["config"].get("agent", {}).get("type", "unknown"),
+                }
+            )
+
     return pd.DataFrame(all_data)
 
 
 def main():
     parser = argparse.ArgumentParser(description="KRSI Multi-Experiment Runner")
-    parser.add_argument("--configs", nargs="+", default=["configs/default.yaml"], 
-                        help="List of YAML configs to run")
-    parser.add_argument("--output-dir", default="experiments/results", 
-                        help="Root directory for all experiment results")
+    parser.add_argument(
+        "--configs", nargs="+", default=["configs/default.yaml"], help="List of YAML configs to run"
+    )
+    parser.add_argument(
+        "--output-dir",
+        default="experiments/results",
+        help="Root directory for all experiment results",
+    )
     args = parser.parse_args()
 
     root_output = Path(args.output_dir)
@@ -69,19 +75,16 @@ def main():
         current_output.mkdir(parents=True, exist_ok=True)
 
         print(f"\n>>> Running Experiment Suite: {config_name}")
-        
+
         # Invoke the training script
         # Note: In a real research environment, we might use a task queue or parallelise this
-        cmd = [
-            sys.executable, "-m", "controller.train",
-            "--config", config_path
-        ]
-        
+        cmd = [sys.executable, "-m", "controller.train", "--config", config_path]
+
         # Override output dir in the env or via config logic if needed
         # For now, we assume the config points to the right place or we move files after
         if run_command(cmd):
-            df = aggregate_results(Path("datasets")) # default output
-            
+            df = aggregate_results(Path("datasets"))  # default output
+
             if not df.empty:
                 stats = {
                     "config": config_name,
@@ -90,16 +93,16 @@ def main():
                     "mean_reward": df["total_reward"].mean(),
                 }
                 summary_records.append(stats)
-                
+
                 # Save aggregated CSV for this config
                 df.to_csv(current_output / "aggregated_results.csv", index=False)
 
     # Final summary table
     if summary_records:
         summary_df = pd.DataFrame(summary_records)
-        print("\n" + "="*50)
+        print("\n" + "=" * 50)
         print("EXPERIMENT SUITE SUMMARY")
-        print("="*50)
+        print("=" * 50)
         print(summary_df.to_string(index=False))
         summary_df.to_csv(root_output / "suite_summary.csv", index=False)
 

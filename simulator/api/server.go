@@ -10,11 +10,11 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"krsi-simulator/engine"
 	"krsi-simulator/models"
 	"krsi-simulator/pkg/logger"
 	"krsi-simulator/pkg/metrics"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // Server wraps the simulation engine and exposes it over HTTP.

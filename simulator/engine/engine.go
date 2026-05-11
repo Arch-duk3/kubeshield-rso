@@ -54,11 +54,11 @@ func DefaultConfig() Config {
 // It is thread-safe via an internal mutex, allowing future parallel episode
 // execution or multi-threaded benchmark scenarios.
 type Engine struct {
-	mu     sync.Mutex
-	state  models.SimulatorState
-	cfg    Config
-	rng    *rand.Rand
-	log    *logger.Logger
+	mu    sync.Mutex
+	state models.SimulatorState
+	cfg   Config
+	rng   *rand.Rand
+	log   *logger.Logger
 }
 
 // New creates and initialises a new simulation Engine.
@@ -75,17 +75,17 @@ func New(cfg Config, log *logger.Logger) *Engine {
 // reset initialises the engine state to the beginning of an episode.
 func (e *Engine) reset() {
 	e.state = models.SimulatorState{
-		TimeStep:   0,
-		NRep:       e.cfg.InitialReplicas,
-		NNodes:     e.cfg.InitialNodes,
-		PSched:     0,
-		ThetaScale: e.cfg.InitialThetaScale,
-		Workload:   100.0,
-		Failures:   0,
+		TimeStep:    0,
+		NRep:        e.cfg.InitialReplicas,
+		NNodes:      e.cfg.InitialNodes,
+		PSched:      0,
+		ThetaScale:  e.cfg.InitialThetaScale,
+		Workload:    100.0,
+		Failures:    0,
 		Adversarial: 0,
-		TotalTime:  0.0,
-		Downtime:   0.0,
-		SimCycleID: e.state.SimCycleID + 1,
+		TotalTime:   0.0,
+		Downtime:    0.0,
+		SimCycleID:  e.state.SimCycleID + 1,
 	}
 }
 
@@ -129,17 +129,17 @@ func (e *Engine) Step(action int) models.MetricsResponse {
 	// 5. Emit structured step log
 	actionName, _ := models.ActionMap[action]
 	data := map[string]interface{}{
-		"action":        action,
-		"action_name":   actionName,
-		"n_rep":         e.state.NRep,
-		"n_nodes":       e.state.NNodes,
-		"p_sched":       e.state.PSched,
-		"failures":      e.state.Failures,
-		"adversarial":   e.state.Adversarial,
-		"workload":      e.state.Workload,
-		"latency_ms":    resp.State.L,
-		"energy_w":      resp.State.E,
-		"was_burst":     wasBurst,
+		"action":      action,
+		"action_name": actionName,
+		"n_rep":       e.state.NRep,
+		"n_nodes":     e.state.NNodes,
+		"p_sched":     e.state.PSched,
+		"failures":    e.state.Failures,
+		"adversarial": e.state.Adversarial,
+		"workload":    e.state.Workload,
+		"latency_ms":  resp.State.L,
+		"energy_w":    resp.State.E,
+		"was_burst":   wasBurst,
 	}
 	e.log.Debug(logger.EventSimStep, "Simulation step completed", e.state.SimCycleID, e.state.TimeStep, data)
 

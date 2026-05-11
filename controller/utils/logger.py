@@ -23,14 +23,15 @@ import logging
 import sys
 import uuid
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class EventType(str, Enum):
     """Canonical event taxonomy for the controller/RL layer."""
+
     # Training lifecycle
     TRAIN_START = "TRAIN_START"
     TRAIN_END = "TRAIN_END"
@@ -86,17 +87,18 @@ class LogRecord:
     Every field is typed and documented so that log consumers (dashboards,
     LLMs, alerting rules) can operate on schema-validated data.
     """
+
     timestamp: str
     level: str
     component: str
     event_type: str
     message: str
-    experiment_id: Optional[str] = None
-    sim_cycle_id: Optional[int] = None
-    step: Optional[int] = None
-    epoch: Optional[int] = None
-    seed: Optional[int] = None
-    data: Dict[str, Any] = field(default_factory=dict)
+    experiment_id: str | None = None
+    sim_cycle_id: int | None = None
+    step: int | None = None
+    epoch: int | None = None
+    seed: int | None = None
+    data: dict[str, Any] = field(default_factory=dict)
 
 
 class KRSILogger:
@@ -125,17 +127,17 @@ class KRSILogger:
         component: str,
         level: str = "INFO",
         output: str = "stdout",
-        log_dir: Optional[str] = None,
-        experiment_id: Optional[str] = None,
+        log_dir: str | None = None,
+        experiment_id: str | None = None,
     ):
         self.component = component
         self.experiment_id = experiment_id or str(uuid.uuid4())[:8]
         self._level = getattr(logging, level.upper(), logging.INFO)
 
         # Context state — set via set_context()
-        self._sim_cycle_id: Optional[int] = None
-        self._seed: Optional[int] = None
-        self._epoch: Optional[int] = None
+        self._sim_cycle_id: int | None = None
+        self._seed: int | None = None
+        self._epoch: int | None = None
 
         # Configure handlers
         self._handlers: list[Any] = []
@@ -148,9 +150,9 @@ class KRSILogger:
 
     def set_context(
         self,
-        sim_cycle_id: Optional[int] = None,
-        seed: Optional[int] = None,
-        epoch: Optional[int] = None,
+        sim_cycle_id: int | None = None,
+        seed: int | None = None,
+        epoch: int | None = None,
     ) -> None:
         """Set persistent context fields that are attached to every subsequent log record."""
         if sim_cycle_id is not None:
@@ -165,15 +167,15 @@ class KRSILogger:
         level: str,
         event_type: EventType | str,
         message: str,
-        step: Optional[int] = None,
-        data: Optional[Dict[str, Any]] = None,
+        step: int | None = None,
+        data: dict[str, Any] | None = None,
     ) -> None:
         lvl_num = getattr(logging, level.upper(), logging.INFO)
         if lvl_num < self._level:
             return
 
         record = LogRecord(
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
             level=level.upper(),
             component=self.component,
             event_type=str(event_type),
@@ -189,14 +191,38 @@ class KRSILogger:
         for handler in self._handlers:
             print(line, file=handler, flush=True)
 
-    def debug(self, event_type: EventType | str, message: str, step: int | None = None, data: dict | None = None) -> None:
+    def debug(
+        self,
+        event_type: EventType | str,
+        message: str,
+        step: int | None = None,
+        data: dict | None = None,
+    ) -> None:
         self._emit("DEBUG", event_type, message, step, data)
 
-    def info(self, event_type: EventType | str, message: str, step: int | None = None, data: dict | None = None) -> None:
+    def info(
+        self,
+        event_type: EventType | str,
+        message: str,
+        step: int | None = None,
+        data: dict | None = None,
+    ) -> None:
         self._emit("INFO", event_type, message, step, data)
 
-    def warning(self, event_type: EventType | str, message: str, step: int | None = None, data: dict | None = None) -> None:
+    def warning(
+        self,
+        event_type: EventType | str,
+        message: str,
+        step: int | None = None,
+        data: dict | None = None,
+    ) -> None:
         self._emit("WARNING", event_type, message, step, data)
 
-    def error(self, event_type: EventType | str, message: str, step: int | None = None, data: dict | None = None) -> None:
+    def error(
+        self,
+        event_type: EventType | str,
+        message: str,
+        step: int | None = None,
+        data: dict | None = None,
+    ) -> None:
         self._emit("ERROR", event_type, message, step, data)

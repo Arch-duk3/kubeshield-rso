@@ -5,13 +5,15 @@ Tests the RL agent independently of the environment.
 Covers: action selection modes, replay buffer, gradient updates,
 epsilon decay, target network sync, and model save/load.
 """
+
 from __future__ import annotations
 
 import math
 import os
 import tempfile
-import pytest
+
 import numpy as np
+import pytest
 import torch
 
 from controller.agents.ddqn_agent import DDQNAgent, ReplayBuffer
@@ -42,6 +44,7 @@ def filled_agent(agent: DDQNAgent) -> DDQNAgent:
 
 # ─── Replay Buffer ───────────────────────────────────────────────────────────
 
+
 class TestReplayBuffer:
     def test_push_and_len(self):
         buf = ReplayBuffer(capacity=100)
@@ -71,21 +74,23 @@ class TestReplayBuffer:
 
 # ─── Action Selection ────────────────────────────────────────────────────────
 
+
 class TestActionSelection:
     def test_action_in_valid_range(self, agent: DDQNAgent):
         state = np.random.randn(12).astype(np.float32)
         for _ in range(50):
             action, reason = agent.select_action(
-                state, r_critical=0.3, R=0.5,
-                heuristic_fn=lambda s, r: 1
+                state, r_critical=0.3, R=0.5, heuristic_fn=lambda s, r: 1
             )
             assert 0 <= action <= 8
 
     def test_heuristic_override_below_critical(self, agent: DDQNAgent):
         state = np.random.randn(12).astype(np.float32)
         action, reason = agent.select_action(
-            state, r_critical=0.3, R=0.1,  # R < r_critical
-            heuristic_fn=lambda s, r: 7
+            state,
+            r_critical=0.3,
+            R=0.1,  # R < r_critical
+            heuristic_fn=lambda s, r: 7,
         )
         assert action == 7
         assert reason == "heuristic"
@@ -93,23 +98,18 @@ class TestActionSelection:
     def test_exploration_at_epsilon_1(self, agent: DDQNAgent):
         agent.epsilon = 1.0  # always explore
         state = np.random.randn(12).astype(np.float32)
-        _, reason = agent.select_action(
-            state, r_critical=0.3, R=0.5,
-            heuristic_fn=lambda s, r: 0
-        )
+        _, reason = agent.select_action(state, r_critical=0.3, R=0.5, heuristic_fn=lambda s, r: 0)
         assert reason == "exploration"
 
     def test_exploitation_at_epsilon_0(self, agent: DDQNAgent):
         agent.epsilon = 0.0  # always exploit
         state = np.random.randn(12).astype(np.float32)
-        _, reason = agent.select_action(
-            state, r_critical=0.3, R=0.5,
-            heuristic_fn=lambda s, r: 0
-        )
+        _, reason = agent.select_action(state, r_critical=0.3, R=0.5, heuristic_fn=lambda s, r: 0)
         assert reason == "exploitation"
 
 
 # ─── Training Update ─────────────────────────────────────────────────────────
+
 
 class TestTrainingUpdate:
     def test_update_returns_none_when_buffer_insufficient(self, agent: DDQNAgent):
@@ -126,14 +126,12 @@ class TestTrainingUpdate:
         params_before = [p.clone() for p in filled_agent.online_net.parameters()]
         filled_agent.update()
         params_after = list(filled_agent.online_net.parameters())
-        changed = any(
-            not torch.equal(b, a)
-            for b, a in zip(params_before, params_after)
-        )
+        changed = any(not torch.equal(b, a) for b, a in zip(params_before, params_after))
         assert changed, "Weights should change after an update"
 
 
 # ─── Epsilon Decay ───────────────────────────────────────────────────────────
+
 
 class TestEpsilonDecay:
     def test_decay_reduces_epsilon(self, agent: DDQNAgent):
@@ -149,6 +147,7 @@ class TestEpsilonDecay:
 
 # ─── Target Network ─────────────────────────────────────────────────────────
 
+
 class TestTargetNetwork:
     def test_sync_copies_weights(self, filled_agent: DDQNAgent):
         # Change online net via an update
@@ -156,13 +155,13 @@ class TestTargetNetwork:
         # Now sync
         filled_agent.sync_target_network()
         for op, tp in zip(
-            filled_agent.online_net.parameters(),
-            filled_agent.target_net.parameters()
+            filled_agent.online_net.parameters(), filled_agent.target_net.parameters()
         ):
             assert torch.equal(op, tp), "Target should match online after sync"
 
 
 # ─── Save / Load ─────────────────────────────────────────────────────────────
+
 
 class TestSaveLoad:
     def test_save_and_load_roundtrip(self, agent: DDQNAgent):
@@ -172,7 +171,8 @@ class TestSaveLoad:
             assert os.path.exists(path)
 
             new_agent = DDQNAgent(
-                state_dim=12, action_dim=9,
+                state_dim=12,
+                action_dim=9,
                 cfg=AgentConfig(),
                 log=KRSILogger("test", level="ERROR"),
                 device="cpu",

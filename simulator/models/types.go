@@ -19,36 +19,36 @@ type MetricsResponse struct {
 
 // SustainabilityMetrics captures energy, utilization, and carbon intensity signals.
 type SustainabilityMetrics struct {
-	ETotal     float64 `json:"e_total"`      // Total power draw (W)
-	W          float64 `json:"w"`            // Useful work processed (req/s)
-	CI         float64 `json:"ci"`           // Carbon intensity (gCO2/kWh)
-	ERenewable float64 `json:"e_renewable"`  // Renewable energy fraction (W)
-	UCpu       float64 `json:"u_cpu"`        // CPU utilization [0,1]
-	UMem       float64 `json:"u_mem"`        // Memory utilization [0,1]
-	USto       float64 `json:"u_sto"`        // Storage utilization [0,1]
-	UTarget    float64 `json:"u_target"`     // Target utilization setpoint (theta_scale)
+	ETotal     float64 `json:"e_total"`     // Total power draw (W)
+	W          float64 `json:"w"`           // Useful work processed (req/s)
+	CI         float64 `json:"ci"`          // Carbon intensity (gCO2/kWh)
+	ERenewable float64 `json:"e_renewable"` // Renewable energy fraction (W)
+	UCpu       float64 `json:"u_cpu"`       // CPU utilization [0,1]
+	UMem       float64 `json:"u_mem"`       // Memory utilization [0,1]
+	USto       float64 `json:"u_sto"`       // Storage utilization [0,1]
+	UTarget    float64 `json:"u_target"`    // Target utilization setpoint (theta_scale)
 }
 
 // ResilienceMetrics captures all resilience sub-domain signals.
 type ResilienceMetrics struct {
-	TUp           float64 `json:"t_up"`            // Total uptime units
-	TObs          float64 `json:"t_obs"`           // Total observed time units
-	Nf            int     `json:"n_f"`             // Active failure count
-	TRec          float64 `json:"t_rec"`           // Current recovery time estimate
-	TRecMax       float64 `json:"t_rec_max"`       // Maximum acceptable recovery time
-	PMin          float64 `json:"p_min"`           // Minimum performance during disruption
-	PBaseline     float64 `json:"p_baseline"`      // Baseline performance
-	PPost         float64 `json:"p_post"`          // Post-recovery performance
+	TUp           float64 `json:"t_up"`           // Total uptime units
+	TObs          float64 `json:"t_obs"`          // Total observed time units
+	Nf            int     `json:"n_f"`            // Active failure count
+	TRec          float64 `json:"t_rec"`          // Current recovery time estimate
+	TRecMax       float64 `json:"t_rec_max"`      // Maximum acceptable recovery time
+	PMin          float64 `json:"p_min"`          // Minimum performance during disruption
+	PBaseline     float64 `json:"p_baseline"`     // Baseline performance
+	PPost         float64 `json:"p_post"`         // Post-recovery performance
 	WDisruption   float64 `json:"w_disruption"`   // Workload shed during disruption
-	WBaseline     float64 `json:"w_baseline"`      // Baseline workload
-	TDet          float64 `json:"t_det"`           // Attack detection time
-	TDetMax       float64 `json:"t_det_max"`       // Maximum detection time threshold
-	TSec          float64 `json:"t_sec"`           // Time to remediate security event
-	TSecMax       float64 `json:"t_sec_max"`       // Max acceptable remediation time
-	NAffected     int     `json:"n_affected"`      // Nodes affected by adversarial events
-	NTotal        int     `json:"n_total"`         // Total node count
-	SeverityScore float64 `json:"severity_score"`  // Normalized attack severity [0,1]
-	OConf         float64 `json:"o_conf"`          // Operational confidence factor
+	WBaseline     float64 `json:"w_baseline"`     // Baseline workload
+	TDet          float64 `json:"t_det"`          // Attack detection time
+	TDetMax       float64 `json:"t_det_max"`      // Maximum detection time threshold
+	TSec          float64 `json:"t_sec"`          // Time to remediate security event
+	TSecMax       float64 `json:"t_sec_max"`      // Max acceptable remediation time
+	NAffected     int     `json:"n_affected"`     // Nodes affected by adversarial events
+	NTotal        int     `json:"n_total"`        // Total node count
+	SeverityScore float64 `json:"severity_score"` // Normalized attack severity [0,1]
+	OConf         float64 `json:"o_conf"`         // Operational confidence factor
 }
 
 // StateMetrics is the raw observable state vector surfaced to the RL agent.
@@ -57,11 +57,11 @@ type StateMetrics struct {
 	UMem       float64 `json:"u_mem"`
 	USto       float64 `json:"u_sto"`
 	E          float64 `json:"e"`
-	L          float64 `json:"l"`          // Latency (ms)
-	F          int     `json:"f"`          // Active failure count
-	NRep       int     `json:"n_rep"`      // Replica count
-	NNodes     int     `json:"n_nodes"`    // Node count
-	PSched     int     `json:"p_sched"`    // Scheduler policy: 0=binpack, 1=spread
+	L          float64 `json:"l"`           // Latency (ms)
+	F          int     `json:"f"`           // Active failure count
+	NRep       int     `json:"n_rep"`       // Replica count
+	NNodes     int     `json:"n_nodes"`     // Node count
+	PSched     int     `json:"p_sched"`     // Scheduler policy: 0=binpack, 1=spread
 	ThetaScale float64 `json:"theta_scale"` // Utilization target setpoint
 }
 
