@@ -1,0 +1,52 @@
+name: Security
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 1' # Every Monday at midnight
+
+jobs:
+  trivy-scan:
+    name: Trivy Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Simulator Image
+        run: docker build -t krsi-simulator:latest -f deploy/docker/Dockerfile.simulator simulator/
+
+      - name: Run Trivy vulnerability scanner (Simulator)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'krsi-simulator:latest'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Build Controller Image
+        run: docker build -t krsi-controller:latest -f deploy/docker/Dockerfile.controller controller/
+
+      - name: Run Trivy vulnerability scanner (Controller)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'krsi-controller:latest'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+  secret-scan:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

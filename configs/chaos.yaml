@@ -1,0 +1,82 @@
+# =============================================================================
+# KRSI Framework — Chaos Test Configuration
+# Aggressive fault injection parameters for chaos engineering tests.
+# =============================================================================
+
+simulator:
+  host: "localhost"
+  port: 8080
+  seed: 999
+
+experiment:
+  seeds: [999, 1001, 1337]
+  epochs: 50
+  steps_per_epoch: 200
+  output_dir: "datasets/chaos"
+  log_level: "DEBUG"
+
+environment:
+  max_nodes: 10
+  max_replicas: 20
+  initial_nodes: 3
+  initial_replicas: 3
+  sla_latency_ms: 50.0
+  max_energy_per_node: 200.0
+  r_min: 0.6
+  r_critical: 0.3
+  heuristic_cooldown: 2
+
+attack:
+  adversarial_prob: 0.15       # Very high attack frequency
+  adversarial_recovery_prob: 0.05
+  burst_prob: 0.25             # Very frequent bursts
+  burst_magnitude: 400.0       # Massive burst magnitude
+  cascade_failure_enabled: true
+  cascade_probability: 0.3
+
+chaos:
+  enabled: true
+  seed: 999
+  pod_failure_rate: 0.2
+  network_latency_inject_prob: 0.15
+  latency_inject_ms_min: 50
+  latency_inject_ms_max: 500
+  packet_drop_prob: 0.05
+  api_instability_prob: 0.1
+  cpu_throttle_prob: 0.1
+  memory_pressure_prob: 0.1
+  service_crash_prob: 0.05
+
+agent:
+  type: "ddqn"
+  learning_rate: 0.001
+  gamma: 0.99
+  epsilon_start: 1.0
+  epsilon_decay: 0.99
+  epsilon_min: 0.1
+  batch_size: 32
+  replay_buffer_size: 10000
+  target_update_freq: 5
+  hidden_layers: [64, 64]
+  activation: "relu"
+  grad_clip_norm: 1.0
+
+reward:
+  lambda_penalty: 2.0
+  gamma_action: 0.1
+  eta_sla: 1.5
+  tanh_scale: 5.0
+  stability_bonus: 0.1
+
+krsi:
+  window_size: 100
+  softmin_k: 5.0
+  sustainability_weights: adaptive
+  resilience_weights: adaptive
+
+logging:
+  format: "json"
+  level: "DEBUG"
+  output: "both"
+  log_dir: "logs/chaos"
+  structured: true

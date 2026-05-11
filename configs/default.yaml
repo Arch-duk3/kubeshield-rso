@@ -1,0 +1,82 @@
+# =============================================================================
+# KRSI Framework — Default Experiment Configuration
+# All parameters are overridable via CLI flags.
+# =============================================================================
+
+simulator:
+  host: "localhost"
+  port: 8080
+  seed: 42
+
+experiment:
+  seeds: [42, 43, 44, 45, 46]
+  epochs: 100
+  steps_per_epoch: 100
+  output_dir: "datasets"
+  log_level: "INFO"  # DEBUG | INFO | WARNING | ERROR
+
+environment:
+  # Node and replica constraints
+  max_nodes: 10
+  max_replicas: 20
+  initial_nodes: 3
+  initial_replicas: 3
+
+  # SLA thresholds
+  sla_latency_ms: 50.0
+  max_energy_per_node: 200.0
+
+  # Resilience thresholds
+  r_min: 0.6
+  r_critical: 0.3
+
+  # Heuristic cooldown steps
+  heuristic_cooldown: 2
+
+agent:
+  type: "ddqn"  # ddqn | heuristic | random
+  learning_rate: 0.001
+  gamma: 0.99
+  epsilon_start: 1.0
+  epsilon_decay: 0.99
+  epsilon_min: 0.1
+  batch_size: 32
+  replay_buffer_size: 10000
+  target_update_freq: 5  # epochs
+
+  # Network architecture
+  hidden_layers: [64, 64]
+  activation: "relu"
+
+  # Gradient clipping
+  grad_clip_norm: 1.0
+
+reward:
+  lambda_penalty: 2.0    # resilience floor violation penalty
+  gamma_action: 0.1      # action-change penalty
+  eta_sla: 1.5           # SLA violation penalty
+  tanh_scale: 5.0        # reward squashing scale
+  stability_bonus: 0.1   # reward for consistent beneficial actions
+
+attack:
+  adversarial_prob: 0.02          # probability of adversarial event per step
+  adversarial_recovery_prob: 0.1  # probability adversarial event resolves
+  burst_prob: 0.1                 # probability of workload burst
+  burst_magnitude: 200.0          # additional load during burst
+
+krsi:
+  window_size: 100
+  softmin_k: 5.0
+  sustainability_weights: adaptive   # adaptive | uniform
+  resilience_weights: adaptive
+
+metrics:
+  prometheus_port: 8081
+  export_interval_seconds: 15
+
+logging:
+  format: "json"
+  level: "INFO"
+  output: "stdout"  # stdout | file | both
+  log_dir: "logs"
+  structured: true

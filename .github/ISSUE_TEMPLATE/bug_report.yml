@@ -1,0 +1,36 @@
+name: Bug Report
+description: Create a report to help us improve KRSI
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this? Please include the config YAML and the seed used.
+      placeholder: |
+        1. Set seed: 42
+        2. Use config: configs/default.yaml
+        3. Run command: python -m controller.train ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Please paste the JSON logs if applicable.

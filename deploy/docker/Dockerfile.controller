@@ -1,0 +1,36 @@
+# --- Base Stage ---
+FROM python:3.11-slim AS base
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# --- Final Stage ---
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy installed packages from base
+COPY --from=base /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=base /usr/local/bin /usr/local/bin
+
+# Copy source code
+COPY . .
+
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV KRSI_CONFIG=/app/configs/default.yaml
+
+# Create directory for datasets and logs
+RUN mkdir -p datasets logs
+
+# Default command: run training
+ENTRYPOINT ["python", "-m", "controller.train"]
+CMD ["--config", "configs/default.yaml"]

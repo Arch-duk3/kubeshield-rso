@@ -1,0 +1,73 @@
+# =============================================================================
+# KRSI Framework — .gitignore
+# =============================================================================
+
+# --- Compiled Binaries ---
+simulator/simulator_app
+simulator/krsi-simulator
+*.exe
+*.out
+*.bin
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+controller/venv/
+venv/
+env/
+.env
+*.egg-info/
+dist/
+build/
+*.whl
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+*.log
+
+# --- Go ---
+simulator/vendor/
+*.test
+*.prof
+
+# --- Experiment Outputs (large, regenerable) ---
+datasets/*.csv
+datasets/*.json
+experiments/results/
+benchmarks/results/
+experiment_seed_*.csv
+
+# --- Secrets & Environment ---
+.env
+.env.*
+secrets/
+*.pem
+*.key
+*.crt
+*.p12
+
+# --- Docker ---
+.docker/
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# --- Kubernetes ---
+deploy/k8s/secrets/
+
+# --- Monitoring ---
+monitoring/grafana/data/
+monitoring/prometheus/data/
+
+# --- Node (for any future frontend tooling) ---
+node_modules/

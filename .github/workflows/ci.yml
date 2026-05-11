@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  go-test:
+    name: Go Tests & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache-dependency-path: simulator/go.sum
+
+      - name: Install dependencies
+        run: cd simulator && go mod download
+
+      - name: Verify formatting
+        run: |
+          if [ "$(gofmt -l simulator | wc -l)" -gt 0 ]; then
+            echo "Go files not formatted properly"
+            gofmt -l simulator
+            exit 1
+          fi
+
+      - name: Run Tests
+        run: cd simulator && go test ./... -v -race -coverprofile=coverage.txt
+
+  python-test:
+    name: Python Tests & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r controller/requirements.txt
+          pip install ruff mypy
+
+      - name: Lint with ruff
+        run: ruff check controller/ tests/
+
+      - name: Check formatting with ruff
+        run: ruff format --check controller/ tests/
+
+      - name: Type check with mypy
+        run: mypy controller/ --ignore-missing-imports
+
+      - name: Run Tests
+        run: |
+          export PYTHONPATH=$PYTHONPATH:.
+          pytest tests/unit/python/ -v --cov=controller --cov-report=xml
+
+  docker-build:
+    name: Docker Build Verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Simulator Image
+        run: docker build -t krsi-simulator:test -f deploy/docker/Dockerfile.simulator simulator/
+
+      - name: Build Controller Image
+        run: docker build -t krsi-controller:test -f deploy/docker/Dockerfile.controller controller/

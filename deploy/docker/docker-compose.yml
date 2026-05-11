@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  simulator:
+    build:
+      context: ../../simulator
+      dockerfile: ../deploy/docker/Dockerfile.simulator
+    ports:
+      - "8080:8080"
+    environment:
+      - LOG_LEVEL=DEBUG
+    networks:
+      - krsi-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+
+  controller:
+    build:
+      context: ../../controller
+      dockerfile: ../deploy/docker/Dockerfile.controller
+    depends_on:
+      simulator:
+        condition: service_healthy
+    volumes:
+      - ../../datasets:/app/datasets
+      - ../../logs:/app/logs
+    environment:
+      - SIMULATOR_URL=http://simulator:8080
+      - KRSI_CONFIG=/app/configs/default.yaml
+    networks:
+      - krsi-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - krsi-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/krsi_dashboard.json
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./grafana-provisioning:/etc/grafana/provisioning
+      - ../grafana/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - krsi-network
+
+networks:
+  krsi-network:
+    driver: bridge
+
+volumes:
+  grafana-storage:

@@ -1,0 +1,9 @@
+apiVersion: v2
+name: krsi
+description: A Helm chart for the KRSI Simulator Digital Twin
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+maintainers:
+  - name: KRSI Research Team
+    email: contact@krsi-research.org
