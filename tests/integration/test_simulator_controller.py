@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import pytest
 import requests
-import time
 
 
 SIMULATOR_URL = "http://localhost:8080"

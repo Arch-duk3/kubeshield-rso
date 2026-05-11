@@ -14,7 +14,6 @@ Coverage:
 """
 from __future__ import annotations
 
-import copy
 import math
 import pytest
 import numpy as np
