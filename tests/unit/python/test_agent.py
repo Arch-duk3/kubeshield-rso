@@ -126,7 +126,7 @@ class TestTrainingUpdate:
         params_before = [p.clone() for p in filled_agent.online_net.parameters()]
         filled_agent.update()
         params_after = list(filled_agent.online_net.parameters())
-        changed = any(not torch.equal(b, a) for b, a in zip(params_before, params_after))
+        changed = any(not torch.equal(b, a) for b, a in zip(params_before, params_after, strict=False))
         assert changed, "Weights should change after an update"
 
 
@@ -155,7 +155,7 @@ class TestTargetNetwork:
         # Now sync
         filled_agent.sync_target_network()
         for op, tp in zip(
-            filled_agent.online_net.parameters(), filled_agent.target_net.parameters()
+            filled_agent.online_net.parameters(), filled_agent.target_net.parameters(), strict=False
         ):
             assert torch.equal(op, tp), "Target should match online after sync"
 

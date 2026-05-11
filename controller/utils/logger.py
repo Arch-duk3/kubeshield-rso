@@ -24,12 +24,12 @@ import sys
 import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
 
-class EventType(str, Enum):
+class EventType(StrEnum):
     """Canonical event taxonomy for the controller/RL layer."""
 
     # Training lifecycle

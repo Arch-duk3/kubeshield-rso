@@ -152,7 +152,7 @@ class DDQNAgent:
             return None
 
         batch = self.buffer.sample(self.cfg.batch_size)
-        states, actions, rewards, next_states, dones = zip(*batch)
+        states, actions, rewards, next_states, dones = zip(*batch, strict=False)
 
         states_t = torch.tensor(np.array(states), dtype=torch.float32, device=self.device)
         actions_t = torch.tensor(actions, dtype=torch.int64, device=self.device).unsqueeze(1)
